@@ -1,6 +1,9 @@
 CMAKE_MINIMUM_REQUIRED (VERSION 2.8.6)
 PROJECT (mqtt_cpp)
 
+include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
+conan_basic_setup(NO_OUTPUT_DIRS)
+
 IF ((CMAKE_VERSION VERSION_GREATER 3.1) OR
     (CMAKE_VERSION VERSION_EQUAL 3.1))
     CMAKE_POLICY(SET CMP0054 NEW)
@@ -32,34 +35,26 @@ IF ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
     SET (CMAKE_CXX_FLAGS "/bigobj ${CMAKE_CXX_FLAGS}")
 ENDIF ()
 
-SET (Boost_USE_STATIC_LIBS        ON) # only find static libs
-SET (Boost_USE_MULTITHREADED      ON)
-# SET (Boost_USE_STATIC_RUNTIME    OFF)
-FIND_PACKAGE (Boost 1.59.0 REQUIRED COMPONENTS chrono timer test_exec_monitor system)
-FIND_PACKAGE (Threads)
-
-IF (NOT MQTT_BEAST_INCLUDE_DIR)
-    IF (${Boost_VERSION} LESS 106600)
-        SET (MQTT_BEAST_INCLUDE_DIR "external/beast/include")
-    ENDIF ()
-ENDIF ()
-
 INCLUDE_DIRECTORIES (
-    ${Boost_INCLUDE_DIR}
     ${MQTT_BEAST_INCLUDE_DIR}
     include
 )
 
-IF (NOT MQTT_NO_TLS)
-    INCLUDE_DIRECTORIES (
-        ${OpenSSL_INCLUDE_DIR}
-        ${MQTT_OPENSSL_INCLUDE_DIR}
-    )
-ENDIF ()
+# IF (NOT MQTT_NO_TLS)
+#     INCLUDE_DIRECTORIES (
+#         ${OpenSSL_INCLUDE_DIR}
+#         ${MQTT_OPENSSL_INCLUDE_DIR}
+#     )
+# ENDIF ()
 
-ENABLE_TESTING ()
-ADD_SUBDIRECTORY (test)
-ADD_SUBDIRECTORY (example)
+if (MQTT_BUILD_TESTS)
+    ENABLE_TESTING ()
+    ADD_SUBDIRECTORY (test)
+endif ()
+
+if (MQTT_BUILD_EXAMPLES)
+    ADD_SUBDIRECTORY (example)
+endif ()
 
 # Doxygen
 FIND_PACKAGE (Doxygen)
